@@ -128,6 +128,8 @@ app.post('/upload', upload.single('image'), async (req, res) => {
         effort: 4
     }).toFile(paths);
 
+    fs.rmSync(`./${req.file.path}`);
+
     res.json({
         id: dbImg._id
     });
