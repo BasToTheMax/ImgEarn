@@ -5,6 +5,8 @@ const app = express.Router();
 
 const db = require('./db');
 
+app.use('/uploads', express.static(__dirname + '/uploads'));
+
 app.get('/', async (req, res) => {
     const images = await db.Image.countDocuments({ status: 'public' });
     const today = new Date().toISOString().split('T')[0];
@@ -31,6 +33,51 @@ app.get('/auth', (req, res) => {
 
 app.get('/dash', (req, res) => {
     res.render('dash');
+});
+
+app.get('/image/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        let img = await db.Image.findById(id);
+        if (!img) return res.status(404).render('404');
+
+        let date = new Date().toISOString().split('T')[0];
+        let dailyView = await db.DailyImageView.findOne({ image: img._id, date });
+
+        // Image view
+        console.log(dailyView);
+        if (!dailyView) {
+            dailyView = new db.DailyImageView({
+                image: img._id,
+                date,
+                views: 0
+            });
+            await dailyView.save();
+        }
+
+        dailyView.views++;
+        await dailyView.save();
+
+        // Site view
+        let siteView = await db.DailyStats.findOne({ date });
+
+        console.log(siteView);
+        if (!siteView) {
+            siteView = new db.siteView({
+                date,
+                totalViews: 0,
+                adRevenue: 0
+            });
+            await siteView.save();
+        }
+
+        await db.DailyStats.findByIdAndUpdate(siteView._id, { $inc: { totalViews: 1 } });
+
+        res.render('image', { img, views: dailyView.views });
+    } catch (error) {
+        console.log(error);
+        return res.status(500).send('ERROR! ' + String(error));
+    }
 });
 
 
