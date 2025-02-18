@@ -8,28 +8,46 @@
 <body>
     <h1>Welcome!</h1>
 
-    <h3>Balance:</h3>
+    <h3>Balance: €<span id="bal">0</span></h3>
     <p>You need at least €10 for payout!</p>
+
+    <hr />
+
+    <a href="/upload">Upload image</a>
 
      <hr />
 
     <h2>Your images:</h2>
-    <ul></ul>
+    <ul id="images"></ul>
 
     <script>
         async function getImages() {
             try {
+                let el = document.getElementById('images');
+                el.innerHTML = '';
                 let images = await fetch('/api/images?token=' + localStorage.getItem('token')).then(r => r.json());
 
                 console.log(images);
+                images.forEach(img => {
+                    el.innerHTML += `<a href="/image/${img._id}"><img width="250px" src="/uploads/${img._id}.webp" alt="Image"><br />${img.status}: ${img.title}</a>`;
+                });
             } catch (error) {
                 alert(error);
             }
         }
 
+        async function getBalance() {
+            let bal = await fetch('/api/balance?token=' + localStorage.getItem('token')).then(r => r.json());
+            bal = bal.balance;
+
+            bal = bal.toFixed(6);
+            document.getElementById('bal').innerHTML = bal;
+        }
+
         if (!localStorage.getItem('token')) window.location.href = '/auth';
         
         getImages();
+        getBalance();
     </script>
 </body>
 </html>
