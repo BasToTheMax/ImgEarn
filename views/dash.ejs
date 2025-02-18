@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dash</title>
+</head>
+<body>
+    <h1>Welcome!</h1>
+
+    <h3>Balance:</h3>
+    <p>You need at least €10 for payout!</p>
+
+     <hr />
+
+    <h2>Your images:</h2>
+    <ul></ul>
+
+    <script>
+        async function getImages() {
+            try {
+                let images = await fetch('/api/images?token=' + localStorage.getItem('token')).then(r => r.json());
+
+                console.log(images);
+            } catch (error) {
+                alert(error);
+            }
+        }
+
+        if (!localStorage.getItem('token')) window.location.href = '/auth';
+        
+        getImages();
+    </script>
+</body>
+</html>

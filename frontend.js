@@ -29,5 +29,9 @@ app.get('/auth', (req, res) => {
     res.render('auth');
 });
 
+app.get('/dash', (req, res) => {
+    res.render('dash');
+});
+
 
 module.exports = app;
