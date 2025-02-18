@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auth</title>
+</head>
+<body>
+    <h1>Authenticationn</h1>
+    
+    <input type="text" placeholder="Username" id="user"><br />
+
+    <input type="password" id="pass" placeholder="Password"><br />
+
+    <button onclick="auth('login')">Login</button>
+    <button onclick="auth('register')">Register</button>
+
+    <script>
+        async function auth(path) {
+            let username = document.getElementById('user').value;
+            let password = document.getElementById('pass').value;
+            try {
+                let res = await fetch(`/api/${path}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+                let body = await res.json();
+                if (res.status == 200) {
+                    localStorage.setItem('token', body.token);
+                    window.location.href = '/dash';
+                } else {
+                    alert(body.message);
+                }
+            } catch (error) {
+                alert(error);
+            }
+        }
+    </script>
+</body>
+</html>

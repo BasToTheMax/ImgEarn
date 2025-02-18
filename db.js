@@ -2,7 +2,7 @@ const log = require('logging').default('DB');
 
 const mongoose = require('mongoose');
 
-mongoose.connect(process.env.MONGODB)
+mongoose.connect(process.env.MONGO)
   .then(() => {
     log.info('Connected to MongoDB');
 })
