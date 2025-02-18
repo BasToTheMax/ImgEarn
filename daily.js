@@ -33,11 +33,19 @@ async function main() {
         log(` | ${p.date} - ${p.totalViews} views`);
     }
 
+    if (pending.length == 0) {
+        log(` | No pending payments!`);
+        process.exit(0);
+    }
+
     log( '-'.repeat(process.stdout.columns) );
 
     let date = prompt('> Enter date: ', {
         autocomplete: complete(pending.map((p) => p.date))
     });
+
+    console.clear();
+
     log(` | "${date}"`);
 
     log(' | Getting info...');
@@ -48,6 +56,8 @@ async function main() {
     let revenue = prompt(`> Enter revenue for ${date}: `);
     revenue = parseFloat(revenue);
     
+    console.clear();
+
     log(` | Revenue: ${revenue}`);
 
     log( '-'.repeat(process.stdout.columns) );
@@ -64,9 +74,16 @@ async function main() {
         process.exit(0);
     }
 
+    console.clear();
+
     log(' | Counting...');
     let uniqueImgCount = await db.DailyImageView.countDocuments({ date });
-    log(` | ${uniqueImgCount} images found`);
+    let totalSiteImgs = await db.Image.countDocuments();
+    log(` | ${uniqueImgCount} / ${totalSiteImgs} images found`);
+    let percent = Math.round((uniqueImgCount/totalSiteImgs)*100);
+
+    log(` | About ${percent}% of the images got at least one view.`);
+
     if (uniqueImgCount == 0) {
         log(` | Exiting...`);
         info.isPaid = true;
