@@ -35,8 +35,20 @@ const User = mongoose.model('User', {
       type: String
     } // Nano address
 });
-const UserIP = mongoose.model('UserIP', {
-    IP: String
+const ViewIP = mongoose.model('ViewIP', {
+    image: {
+      type: mongoose.Types.ObjectId,
+      ref: 'Image',
+      required: true
+    },
+    date: {
+      type: String,
+      required: true
+    },
+    ip: {
+      type: String,
+      required: true
+    }
 });
 
 const Image = mongoose.model('Image', {
@@ -103,7 +115,7 @@ const DailyStats = mongoose.model('DailyStats', {
 
 module.exports = {
   User,
-  UserIP,
+  ViewIP,
   Image,
   DailyImageView,
   DailyStats

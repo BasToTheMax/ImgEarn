@@ -37,6 +37,7 @@ app.get('/dash', (req, res) => {
 
 app.get('/image/:id', async (req, res) => {
     try {
+        let ip = req.ip;
         const { id } = req.params;
         let img = await db.Image.findById(id);
         if (!img) return res.status(404).render('404');
@@ -45,7 +46,6 @@ app.get('/image/:id', async (req, res) => {
         let dailyView = await db.DailyImageView.findOne({ image: img._id, date });
 
         // Image view
-        console.log(dailyView);
         if (!dailyView) {
             dailyView = new db.DailyImageView({
                 image: img._id,
@@ -55,15 +55,17 @@ app.get('/image/:id', async (req, res) => {
             await dailyView.save();
         }
 
-        dailyView.views++;
-        await dailyView.save();
+        let ipData = await db.ViewIP.findOne({ date, ip });
+        if (!ipData) {
+            dailyView.views++;
+            await dailyView.save();
+        }
 
         // Site view
         let siteView = await db.DailyStats.findOne({ date });
 
-        console.log(siteView);
         if (!siteView) {
-            siteView = new db.siteView({
+            siteView = new db.DailyStats({
                 date,
                 totalViews: 0,
                 adRevenue: 0
@@ -71,7 +73,16 @@ app.get('/image/:id', async (req, res) => {
             await siteView.save();
         }
 
-        await db.DailyStats.findByIdAndUpdate(siteView._id, { $inc: { totalViews: 1 } });
+        if (!ipData) await db.DailyStats.findByIdAndUpdate(siteView._id, { $inc: { totalViews: 1 } });
+
+        if (!ipData) {
+            ipData = new db.ViewIP({
+                ip,
+                date,
+                image: img._id
+            });
+            await ipData.save();
+        }
 
         res.render('image', { img, views: dailyView.views });
     } catch (error) {
