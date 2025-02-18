@@ -81,9 +81,6 @@ app.use(async (req, res, next) => {
     }
     if (req.query.token) token = req.query.token;
 
-
-    console.log(req.body);
-
     if (!token) return res.status(400).json({ message: 'No token provided.' });
 
     let user = await db.User.findOne({ token });
