@@ -1,0 +1,92 @@
+require('dotenv').config();
+
+let prompt = require('prompt-sync')();
+let db = require('./db');
+
+let log = console.log;
+
+main();
+
+function complete(commands) {
+    return function (str) {
+      var i;
+      var ret = [];
+      for (i=0; i< commands.length; i++) {
+        if (commands[i].indexOf(str) == 0)
+          ret.push(commands[i]);
+      }
+      return ret;
+    };
+  };
+
+async function main() {
+    console.clear(); 
+
+    log(`Getting unpaid days...`);
+    let pending = await getPending();
+
+    log( '-'.repeat(process.stdout.columns) );
+
+    // console.log(pending);
+    for(let i = 0; i < pending.length; i++) {
+        let p = pending[i];
+        log(` | ${p.date} - ${p.totalViews} views`);
+    }
+
+    log( '-'.repeat(process.stdout.columns) );
+
+    let date = prompt('> Enter date: ', {
+        autocomplete: complete(pending.map((p) => p.date))
+    });
+    log(` | "${date}"`);
+
+    log(' | Getting info...');
+    let info = await getInfo(date);
+
+    log(` | ${info.date} - ${info.totalViews} views`);
+    
+    let revenue = prompt(`> Enter revenue for ${date}: `);
+    revenue = parseFloat(revenue);
+    
+    log(` | Revenue: ${revenue}`);
+
+    log( '-'.repeat(process.stdout.columns) );
+
+    log(` | ${info.date} - ${info.totalViews} views`);
+    log(` | ${info.date} - € ${revenue} revenue`);
+    log(` | ${info.date} - € ${revenue/info.totalViews} per view`);
+
+    log( '-'.repeat(process.stdout.columns) );
+
+    let shouldGo = prompt(' > Continue? (y/n): ');
+    if (shouldGo != 'y' && shouldGo != 'Y') {
+        log(' > Exiting...');
+        process.exit(0);
+    }
+
+    log(' | Counting...');
+    let uniqueImgCount = await db.DailyImageView.countDocuments({ date });
+    log(` | ${uniqueImgCount} images found`);
+    if (uniqueImgCount == 0) {
+        log(` | Exiting...`);
+        info.isPaid = true;
+        await info.save();
+        process.exit(0);
+    }
+
+    log(` | ${Math.round(info.totalViews/uniqueImgCount)} average views/image | € ${((revenue/info.totalViews)*(info.totalViews/uniqueImgCount)).toFixed(5)} average per image`);
+}
+
+async function getPending() {
+    let pending = await db.DailyStats.find({
+        isPaid: false
+    });
+    return pending;
+}
+
+async function getInfo(date) {
+    return await db.DailyStats.findOne({
+        isPaid: false,
+        date
+    });
+}

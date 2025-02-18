@@ -31,6 +31,11 @@ const User = mongoose.model('User', {
       required: true
     },
 
+    isAdmin: {
+      type: Boolean,
+      default: false
+    },
+
     nano: {
       type: String
     } // Nano address
@@ -106,11 +111,10 @@ const DailyStats = mongoose.model('DailyStats', {
       type: Number,
       default: 0
     },
-    earnings: { // Earnings for each user for this day (userId => earnings)
-      type: Map,
-      of: Number,
-      default: {}
-    } 
+    isPaid: {
+      type: Boolean,
+      default: false
+    }
 });
 
 module.exports = {

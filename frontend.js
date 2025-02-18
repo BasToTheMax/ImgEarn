@@ -91,5 +91,9 @@ app.get('/image/:id', async (req, res) => {
     }
 });
 
+app.get('/admin', (req, res) => {
+    res.render('admin');
+});
+
 
 module.exports = app;
