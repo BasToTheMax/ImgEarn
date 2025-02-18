@@ -74,7 +74,31 @@ async function main() {
         process.exit(0);
     }
 
+    let revenuePerView = (revenue/info.totalViews).toFixed(5);
+
     log(` | ${Math.round(info.totalViews/uniqueImgCount)} average views/image | € ${((revenue/info.totalViews)*(info.totalViews/uniqueImgCount)).toFixed(5)} average per image`);
+
+    let images = await db.DailyImageView.find({ date });
+    for(let i = 0; i < images.length; i++) {
+        let img = images[i];
+
+        let toAdd = revenuePerView * img.views;
+
+        let imag = await db.Image.findById(img.image);
+        let user = await db.User.findById(imag.user);
+
+        user.balance += toAdd;
+        await user.save();
+
+        log(` | Processed [${i+1}/${images.length}] € ${toAdd} for ${img.views} views`);
+
+    }
+
+    log(` | Done!`);
+    info.isPaid = true;
+    await info.save();
+    log(` | Exiting...`);
+    process.exit(0);
 }
 
 async function getPending() {
